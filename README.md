@@ -10,7 +10,7 @@
 
 AI providers are increasingly restricting third-party access to subscription-covered tools. If you pay for an interactive AI assistant (flat monthly fee, unlimited use), you can use it in its terminal, but your orchestrator agent can't. Your orchestrator has to pay API rates separately, for the same model you already have access to.
 
-**The Bridge** fixes this. It lets any orchestrator agent delegate tasks to any subscription-covered terminal AI using nothing but the filesystem. No API calls, no tokens burned, no third-party harness detection.
+**The Bridge** fixes this. It lets any orchestrator agent delegate tasks to any subscription-covered terminal AI using nothing but the filesystem. No API calls, no tokens burned.
 
 The key insight: terminal-based AI tools already read project instruction files and respond to natural language. That's already a protocol, just an informal one. The Bridge formalizes it with structured JSON input/output and a defined lifecycle.
 
