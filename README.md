@@ -1,6 +1,6 @@
 # The Bridge
 
-> **An open-source protocol for humans to organize task delegation to their own AI subscriptions — through the filesystem, not through APIs.**
+> **An open-source protocol for humans to organize task delegation to their own AI subscriptions. Through the filesystem, not through APIs.**
 >
 > Zero API cost. Zero dependencies. Just files on disk.
 
@@ -13,6 +13,8 @@ AI providers are increasingly restricting third-party access to subscription-cov
 **The Bridge** fixes this. It lets any orchestrator agent delegate tasks to any subscription-covered terminal AI using nothing but the filesystem. No API calls, no tokens burned.
 
 The key insight: terminal-based AI tools already read project instruction files and respond to natural language. That's already a protocol, just an informal one. The Bridge formalizes it with structured JSON input/output and a defined lifecycle.
+
+*This project respects provider policies. The Bridge does not bypass APIs, intercept tokens, or harness third-party integrations. It organizes how humans use their own subscription tools through the terminal, as intended.*
 
 ---
 
