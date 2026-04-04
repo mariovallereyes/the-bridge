@@ -1,6 +1,6 @@
 # The Bridge
 
-> **A file-based protocol for AI-to-AI task delegation using subscription-covered tools.**
+> **An open-source protocol for humans to organize task delegation to their own AI subscriptions — through the filesystem, not through APIs.**
 >
 > Zero API cost. Zero dependencies. Just files on disk.
 
