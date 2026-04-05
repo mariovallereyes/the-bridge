@@ -22,7 +22,27 @@ Before dispatching tasks, ensure:
 
 ---
 
-## 3. Maintaining Context
+## 3. Quick Dispatch (One Command)
+
+The `scripts/bridge.sh` script handles the full dispatch-and-poll cycle in a single command:
+
+```bash
+./scripts/bridge.sh "Task title" "Detailed description of what to do" ~/Projects/target 300
+```
+
+Arguments:
+1. **Title** (required) - short summary
+2. **Description** (required) - detailed instructions
+3. **Working directory** (optional) - where the worker should operate
+4. **Timeout** (optional, default 300s) - max seconds to wait
+
+It generates a task ID, writes the JSON atomically to `inbox/`, sends the tmux trigger, polls `outbox/` with backoff, and prints the result JSON to stdout. Exit code 0 on success, 1 on timeout.
+
+This is the recommended starting point for most orchestrators. For more control (custom task JSON, retry logic, multi-step workflows), see the detailed dispatch flow below.
+
+---
+
+## 4. Maintaining Context
 
 ### 3.1 Update CONTEXT.md Between Tasks
 
@@ -54,7 +74,7 @@ EOF
 
 ---
 
-## 4. Dispatching a Task
+## 5. Dispatching a Task (Detailed)
 
 ### 4.1 Step-by-Step
 
@@ -104,7 +124,7 @@ Convention: Files starting with `.` are ignored by the worker. Use `.filename.tm
 
 ---
 
-## 5. Reading Results
+## 6. Reading Results
 
 ### 4.1 Polling Strategy
 
@@ -177,7 +197,7 @@ rm "${BRIDGE_DIR}/outbox/${TASK_ID}.json"
 
 ---
 
-## 6. tmux Interaction
+## 7. tmux Interaction
 
 ### 5.1 Session Management
 
@@ -234,7 +254,7 @@ tmux send-keys -t bridge:0.1 "watch -n 2 'ls -la inbox/ active/ outbox/'" Enter
 
 ---
 
-## 7. Task Design Best Practices
+## 8. Task Design Best Practices
 
 ### 6.1 Write Clear Descriptions
 
@@ -304,7 +324,7 @@ The worker is an AI. It follows instructions literally. Be specific:
 
 ---
 
-## 8. Error Recovery
+## 9. Error Recovery
 
 ### 7.1 Retry Logic
 
@@ -368,7 +388,7 @@ fi
 
 ---
 
-## 9. OpenClaw Integration
+## 10. OpenClaw Integration
 
 For OpenClaw users, The Bridge can be wrapped as a skill:
 
@@ -394,7 +414,7 @@ A full OpenClaw skill implementation is planned for Phase 2.
 
 ---
 
-## 10. Monitoring Dashboard (Optional)
+## 11. Monitoring Dashboard (Optional)
 
 A simple watch command provides a live dashboard:
 

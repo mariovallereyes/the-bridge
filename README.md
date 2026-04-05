@@ -129,9 +129,11 @@ cp templates/CONTEXT.md ~/.the-bridge/CONTEXT.md
 # 3. Start a tmux session and launch your AI tool
 tmux new-session -d -s bridge -c ~/.the-bridge
 
-# 4. Drop a task in inbox/ and trigger the worker
-tmux send-keys -t bridge "check inbox" Enter
+# 4. Dispatch a task (one command)
+./scripts/bridge.sh "Fix the login bug" "The login form doesn't submit on click" ~/Projects/my-app
 ```
+
+`bridge.sh` writes the task JSON, triggers the worker, polls for the result, and prints it to stdout. One command, full round-trip.
 
 ---
 

@@ -162,7 +162,17 @@ If it doesn't recognize the command, refine your `CLAUDE.md` wording and try aga
 
 ## 4. Testing
 
-### 4.1 Manual Test
+### 4.1 Quick Test with bridge.sh
+
+The fastest way to test your setup:
+
+```bash
+./scripts/bridge.sh "Ping test" "Create a file workspace/hello.txt containing 'Bridge works!'" "$BRIDGE_DIR" 60
+```
+
+This dispatches a task, triggers the worker, waits for the result, and prints it. If you see a JSON result with `"status": "completed"`, your bridge is working.
+
+### 4.2 Manual Test
 
 Open a new terminal (NOT the tmux session):
 
@@ -191,7 +201,7 @@ sleep 15
 cat "$BRIDGE_DIR/outbox/test-001.json"
 ```
 
-### 4.2 Expected Result
+### 4.3 Expected Result
 
 ```json
 {
@@ -208,7 +218,7 @@ cat "$BRIDGE_DIR/outbox/test-001.json"
 }
 ```
 
-### 4.3 Verification Checklist
+### 4.4 Verification Checklist
 
 - [ ] Task file gone from `inbox/`
 - [ ] Task file NOT in `active/` (was cleaned up)

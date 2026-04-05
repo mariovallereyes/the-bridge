@@ -90,6 +90,7 @@ The orchestrator does NOT need to understand the worker's internals. It only nee
 - Follow the protocol spec for file formats
 
 **Example orchestrator implementations:**
+- `scripts/bridge.sh` - reference implementation, single-command dispatch + poll
 - An OpenClaw skill (reads/writes files, sends tmux keys)
 - A Python script
 - A shell script
