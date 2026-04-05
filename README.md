@@ -137,6 +137,14 @@ tmux new-session -d -s bridge -c ~/.the-bridge
 
 ---
 
+## Windows / `--print` Mode
+
+The default Bridge uses tmux for persistent terminal sessions — great on Mac/Linux, unavailable on Windows. The **`--print` mode** implementation replaces tmux with Claude Code's single-turn `--print` flag, using a Node.js dispatcher (`scripts/bridge.js`) that spawns a fresh `claude --print` process per task. Same protocol, same JSON format, no tmux dependency.
+
+Works on any OS with Node.js and Claude Code installed. See **[docs/WINDOWS.md](docs/WINDOWS.md)** for setup, usage, architecture details, and trade-offs.
+
+---
+
 ## Documentation
 
 | Document | Audience | Description |
@@ -147,6 +155,7 @@ tmux new-session -d -s bridge -c ~/.the-bridge
 | [Agent Contract](docs/AGENT-CONTRACT.md) | Worker Agents | Template contract and contract design |
 | [Orchestrator Guide](docs/ORCHESTRATOR-GUIDE.md) | Orchestrator Agents | How to dispatch and manage tasks |
 | [Setup](docs/SETUP.md) | Humans | Step-by-step installation and configuration |
+| [Windows](docs/WINDOWS.md) | Humans, Agents | Windows/`--print` mode setup and architecture |
 | [Security](docs/SECURITY.md) | Everyone | Threat model and safety considerations |
 
 ---
