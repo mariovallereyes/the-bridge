@@ -32,6 +32,23 @@ The worker always knows the protocol, always has current context, and gets speci
 
 ---
 
+## Choose Your Implementation
+
+The Bridge protocol supports two runtime modes. Both use the same JSON format, the same directory structure, and the same worker contract. Choose based on your needs:
+
+| | **tmux mode** | **`--print` mode** |
+|---|---|---|
+| **Script** | `scripts/bridge.sh` | `scripts/bridge.js` |
+| **OS** | Any (requires tmux) | Any (requires Node.js) |
+| **Session model** | Persistent — worker stays alive between tasks | Stateless — fresh process per task |
+| **Latency** | Low (worker is already running) | Higher (cold start each task) |
+| **Dependencies** | tmux, bash | Node.js |
+| **Best for** | High-frequency task streams, interactive debugging | Simple setups, CI/CD, Windows, environments without tmux |
+
+Both are first-class. Pick whichever fits your workflow.
+
+---
+
 ## How It Works
 
 ```
@@ -41,7 +58,7 @@ The worker always knows the protocol, always has current context, and gets speci
 └─────────────┘                          └─────────────────┘
 ```
 
-### Flow
+### tmux mode (`bridge.sh`)
 
 1. Orchestrator updates `CONTEXT.md` with current state
 2. Orchestrator writes a task JSON to `inbox/`
@@ -49,7 +66,17 @@ The worker always knows the protocol, always has current context, and gets speci
 4. Worker reads `CONTEXT.md` + the task, does the work, writes result to `outbox/`
 5. Orchestrator reads the result and continues
 
-The worker runs inside a normal tmux session. From its perspective, it's just a human asking it to do things.
+The worker runs inside a persistent tmux session. From its perspective, it's just a human asking it to do things. Low latency because the worker is already warm.
+
+### `--print` mode (`bridge.js`)
+
+1. Orchestrator updates `CONTEXT.md` with current state
+2. Orchestrator writes a task JSON to `inbox/`
+3. Dispatcher spawns `claude --print` with the bridge directory as working directory
+4. Worker reads `CLAUDE.md` + `CONTEXT.md` + the task, does the work, writes result to `outbox/`
+5. Dispatcher detects the result file and returns it
+
+No persistent session. Each task is a clean invocation of `claude --print`. The worker reads the contract and context fresh every time — no tmux required.
 
 ---
 
@@ -116,15 +143,15 @@ That's it. JSON in, JSON out. Every task and result is a file you can read, audi
 
 > See **[docs/SETUP.md](docs/SETUP.md)** for step-by-step installation and configuration.
 
-**TL;DR:**
+### Option A: tmux mode (persistent session)
 
 ```bash
 # 1. Create the bridge directory
 mkdir -p ~/.the-bridge/{inbox,outbox,active,archive,workspace,logs}
 
-# 2. Copy the worker contract template
+# 2. Copy the worker contract and context templates
 cp templates/CLAUDE.md ~/.the-bridge/CLAUDE.md
-cp templates/CONTEXT.md ~/.the-bridge/CONTEXT.md
+cp templates/CONTEXT-example.md ~/.the-bridge/CONTEXT.md  # edit with your own context
 
 # 3. Start a tmux session and launch your AI tool
 tmux new-session -d -s bridge -c ~/.the-bridge
@@ -133,15 +160,25 @@ tmux new-session -d -s bridge -c ~/.the-bridge
 ./scripts/bridge.sh "Fix the login bug" "The login form doesn't submit on click" ~/Projects/my-app
 ```
 
-`bridge.sh` writes the task JSON, triggers the worker, polls for the result, and prints it to stdout. One command, full round-trip.
+`bridge.sh` writes the task JSON, sends a keystroke to the tmux session, polls for the result, and prints it to stdout. One command, full round-trip.
 
----
+### Option B: `--print` mode (stateless, any OS)
 
-## Windows / `--print` Mode
+```bash
+# 1. Create the bridge directory
+mkdir -p ~/.the-bridge/{inbox,outbox,active,archive,workspace,logs}
 
-The default Bridge uses tmux for persistent terminal sessions — great on Mac/Linux, unavailable on Windows. The **`--print` mode** implementation replaces tmux with Claude Code's single-turn `--print` flag, using a Node.js dispatcher (`scripts/bridge.js`) that spawns a fresh `claude --print` process per task. Same protocol, same JSON format, no tmux dependency.
+# 2. Copy the worker contract and context templates
+cp templates/CLAUDE-windows.md ~/.the-bridge/CLAUDE.md  # --print mode contract
+cp templates/CONTEXT-example.md ~/.the-bridge/CONTEXT.md  # edit with your own context
 
-Works on any OS with Node.js and Claude Code installed. See **[docs/WINDOWS.md](docs/WINDOWS.md)** for setup, usage, architecture details, and trade-offs.
+# 3. Dispatch a task (one command)
+node scripts/bridge.js "Fix the login bug" "The login form doesn't submit on click" ~/Projects/my-app
+```
+
+`bridge.js` writes the task JSON, spawns `claude --print`, waits for the result file, and prints it to stdout. No tmux, no persistent session. Works on Mac, Linux, and Windows.
+
+See **[docs/WINDOWS.md](docs/WINDOWS.md)** for detailed setup, architecture, and trade-offs.
 
 ---
 
@@ -155,7 +192,7 @@ Works on any OS with Node.js and Claude Code installed. See **[docs/WINDOWS.md](
 | [Agent Contract](docs/AGENT-CONTRACT.md) | Worker Agents | Template contract and contract design |
 | [Orchestrator Guide](docs/ORCHESTRATOR-GUIDE.md) | Orchestrator Agents | How to dispatch and manage tasks |
 | [Setup](docs/SETUP.md) | Humans | Step-by-step installation and configuration |
-| [Windows](docs/WINDOWS.md) | Humans, Agents | Windows/`--print` mode setup and architecture |
+| [`--print` Mode](docs/WINDOWS.md) | Humans, Agents | `--print` mode setup, architecture, and trade-offs |
 | [Security](docs/SECURITY.md) | Everyone | Threat model and safety considerations |
 
 ---
