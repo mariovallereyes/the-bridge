@@ -259,6 +259,20 @@ else
   fail "health.sh human output: $HEALTH_HUMAN"
 fi
 
+# --- Test 9: notify.sh signal file ---
+echo "Test 9: notify.sh writes signal file"
+BRIDGE_DIR="$TEST_DIR" BRIDGE_NOTIFY_METHOD=file bash "$SCRIPT_DIR/notify.sh" "Test notification" --task-id "e2e-notify-001" 2>/dev/null
+if [ -f "$TEST_DIR/logs/completion-signal.json" ]; then
+  SIGNAL_TASK=$(python3 -c "import json; print(json.load(open('$TEST_DIR/logs/completion-signal.json'))['task_id'])" 2>/dev/null)
+  if [ "$SIGNAL_TASK" = "e2e-notify-001" ]; then
+    pass "notify.sh writes valid signal file with task ID"
+  else
+    fail "notify.sh signal file task_id: $SIGNAL_TASK"
+  fi
+else
+  fail "notify.sh: signal file not created"
+fi
+
 # --- Summary ---
 echo ""
 echo "====================="
