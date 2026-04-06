@@ -174,9 +174,22 @@ If `CONTEXT.md` and a task JSON conflict, **the task JSON takes priority**. Task
 | `expected_output` | object | ❌ | What the orchestrator expects back |
 | `expected_output.type` | enum | ❌ | `code_change`, `analysis`, `file`, `answer`, `structured_data` |
 | `expected_output.success_criteria` | string | ❌ | How to know the task is done correctly |
-| `metadata` | object | ❌ | Arbitrary key-value pairs for tracking |
+| `metadata` | object | ❌ | Arbitrary key-value pairs for tracking (see §3.3) |
 
-### 3.3 Task Types
+### 3.3 Metadata Convention (ACP Integration)
+
+When an orchestrator dispatches tasks, the `metadata` block carries session tracking information for result relay:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `metadata.source` | string | Dispatching agent or platform (e.g., "openclaw", "patti", "marko") |
+| `metadata.session_key` | string | Orchestrator session identifier for routing the result back to the correct conversation |
+| `metadata.dispatched_at` | ISO 8601 | When the orchestrator dispatched the task (may differ from `created_at`) |
+| `metadata.tags` | string[] | Arbitrary tags for categorization and filtering |
+
+Workers SHOULD pass through any `metadata` fields unchanged into the result file. Orchestrators use these fields for result relay, task registry updates, and audit trails. Workers that do not understand specific metadata fields SHOULD ignore them.
+
+### 3.4 Task Types
 
 | Type | Description | Typical Worker Action |
 |------|-------------|----------------------|

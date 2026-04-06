@@ -194,6 +194,8 @@ See **[docs/WINDOWS.md](docs/WINDOWS.md)** for detailed setup, architecture, and
 | [Setup](docs/SETUP.md) | Humans | Step-by-step installation and configuration |
 | [`--print` Mode](docs/WINDOWS.md) | Humans, Agents | `--print` mode setup, architecture, and trade-offs |
 | [Security](docs/SECURITY.md) | Everyone | Threat model and safety considerations |
+| [Hybrid Architecture](docs/Hybrid-Architecture-ACP-Bridge.md) | Engineers | ACP/orchestrator integration design |
+| [Implementation Checklist](docs/IMPLEMENTATION-CHECKLIST.md) | Contributors | Phased implementation tracker |
 
 ---
 
