@@ -31,14 +31,16 @@
 - [x] Smoke tests passed: task JSON generation with metadata, relay.sh with 4 result types (completed/failed/partial/data), tmux session detection, all scripts executable with valid shebangs
 - [ ] Full round-trip test with external dispatch (requires separate worker session -- cannot self-test)
 
-## Phase 3: Structured Result Relay
+## Phase 3: Structured Result Relay (CURRENT)
 
-- [ ] OpenClaw agent automatically parses bridge.sh/bridge-acp.sh stdout JSON
-- [ ] Agent formats human-friendly response using relay.sh logic (not raw JSON)
+- [x] context-update.sh -- auto-appends completed tasks to CONTEXT.md task history (keeps last 10, updates date header, removes placeholder)
+- [x] health.sh -- worker health check (tmux alive, orphans in active/, stale results, JSON and human output modes)
+- [x] test-e2e.sh -- end-to-end test harness with mock worker (9 tests: relay formatting, context updates, health checks, full dispatch->consume->relay cycle)
+- [x] E2E tests: 9/9 passed
+- [ ] OpenClaw agent automatically calls context-update.sh after each Bridge task
+- [ ] Agent calls health.sh before dispatching (pre-flight check)
 - [ ] Agent updates task registry (tasks/log-task.sh) on completion/failure
 - [ ] Agent appends significant tasks to daily memory file
-- [ ] Agent updates CONTEXT.md task history after each completed task
-- [ ] Error handling: timeout, worker down, malformed result
 
 ## Phase 4: OpenClaw Task Integration
 
@@ -76,6 +78,9 @@
 | poll.sh | Low-level poll only (no dispatch) | 1 |
 | archive.sh | Move completed results to archive/ | 1 |
 | status.sh | Bridge dashboard (inbox/active/outbox counts) | 1 |
+| context-update.sh | Append completed task to CONTEXT.md history | 3 |
+| health.sh | Worker health check (tmux, orphans, stale results) | 3 |
+| test-e2e.sh | End-to-end test harness with mock worker (9 tests) | 3 |
 
 ## Environment Variables (bridge-acp.sh)
 
