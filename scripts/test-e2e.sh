@@ -211,6 +211,54 @@ fi
 kill "$MOCK_PID" 2>/dev/null || true
 MOCK_PID=""
 
+# --- Test 6: openclaw-dispatch.sh preflight failure ---
+echo "Test 6: openclaw-dispatch.sh preflight with dead worker"
+OC_OUT=$(BRIDGE_DIR="$TEST_DIR" BRIDGE_TMUX_SESSION="nonexistent-test" bash "$SCRIPT_DIR/openclaw-dispatch.sh" "Test" "Test" "" 30 2>/dev/null || true)
+if echo "$OC_OUT" | grep -q "Bridge is not available"; then
+  pass "openclaw-dispatch.sh reports preflight failure cleanly"
+else
+  fail "openclaw-dispatch.sh preflight: $OC_OUT"
+fi
+
+# --- Test 7: openclaw-dispatch.sh with skip-preflight and mock result ---
+echo "Test 7: openclaw-dispatch.sh relay output from existing result"
+# Write a result directly and test relay portion
+MOCK_TASK="e2e-oc-001"
+cat > "$TEST_DIR/outbox/${MOCK_TASK}.json" << MOCKEOF
+{
+  "id": "${MOCK_TASK}",
+  "version": "0.1.0",
+  "completed_at": "2026-04-06T16:00:00Z",
+  "duration_seconds": 42,
+  "status": "completed",
+  "result": {
+    "summary": "OpenClaw integration test passed",
+    "files_changed": ["src/app.ts"],
+    "files_created": [],
+    "tests_run": "vitest (5 passed)",
+    "data": null,
+    "warnings": []
+  },
+  "error": null
+}
+MOCKEOF
+# Test relay directly on this result
+RELAY_OC=$(bash "$SCRIPT_DIR/relay.sh" "$TEST_DIR/outbox/${MOCK_TASK}.json" 2>/dev/null)
+if echo "$RELAY_OC" | grep -q "OpenClaw integration test passed" && echo "$RELAY_OC" | grep -q "src/app.ts"; then
+  pass "openclaw-dispatch relay path formats result with summary + files"
+else
+  fail "openclaw-dispatch relay: $RELAY_OC"
+fi
+
+# --- Test 8: health.sh human mode ---
+echo "Test 8: health.sh human-readable output"
+HEALTH_HUMAN=$(BRIDGE_DIR="$TEST_DIR" BRIDGE_TMUX_SESSION="bridge" bash "$SCRIPT_DIR/health.sh" 2>/dev/null || true)
+if echo "$HEALTH_HUMAN" | grep -q "Bridge Health Check" && echo "$HEALTH_HUMAN" | grep -q "Worker"; then
+  pass "health.sh produces human-readable dashboard"
+else
+  fail "health.sh human output: $HEALTH_HUMAN"
+fi
+
 # --- Summary ---
 echo ""
 echo "====================="

@@ -35,12 +35,13 @@
 
 - [x] context-update.sh -- auto-appends completed tasks to CONTEXT.md task history (keeps last 10, updates date header, removes placeholder)
 - [x] health.sh -- worker health check (tmux alive, orphans in active/, stale results, JSON and human output modes)
-- [x] test-e2e.sh -- end-to-end test harness with mock worker (9 tests: relay formatting, context updates, health checks, full dispatch->consume->relay cycle)
-- [x] E2E tests: 9/9 passed
-- [ ] OpenClaw agent automatically calls context-update.sh after each Bridge task
-- [ ] Agent calls health.sh before dispatching (pre-flight check)
-- [ ] Agent updates task registry (tasks/log-task.sh) on completion/failure
-- [ ] Agent appends significant tasks to daily memory file
+- [x] test-e2e.sh -- end-to-end test harness with mock worker (12 tests)
+- [x] E2E tests: 12/12 passed
+- [x] openclaw-dispatch.sh -- full integration script: preflight -> dispatch -> relay -> context-update -> task-registry. One exec call for OpenClaw agents.
+- [x] Preflight health check integrated (health.sh called before dispatch, exits 2 if unhealthy)
+- [x] Post-completion CONTEXT.md update integrated (context-update.sh called automatically)
+- [x] Task registry update hooks integrated (auto-detects log-task.sh, logs done/failed)
+- [ ] Agent appends significant tasks to daily memory file (agent-side, not script-side)
 
 ## Phase 4: OpenClaw Task Integration
 
@@ -78,9 +79,10 @@
 | poll.sh | Low-level poll only (no dispatch) | 1 |
 | archive.sh | Move completed results to archive/ | 1 |
 | status.sh | Bridge dashboard (inbox/active/outbox counts) | 1 |
+| openclaw-dispatch.sh | Full integration: preflight + dispatch + relay + context + registry | 3 |
 | context-update.sh | Append completed task to CONTEXT.md history | 3 |
 | health.sh | Worker health check (tmux, orphans, stale results) | 3 |
-| test-e2e.sh | End-to-end test harness with mock worker (9 tests) | 3 |
+| test-e2e.sh | End-to-end test harness with mock worker (12 tests) | 3 |
 
 ## Environment Variables (bridge-acp.sh)
 
