@@ -27,8 +27,9 @@
 - [x] Update README doc table with new docs
 - [x] relay.sh tested with real result files (works)
 - [x] bridge-acp.sh tested: task JSON generation verified (valid JSON with metadata). Full round-trip requires a separate worker session (cannot self-dispatch).
-- [ ] Update Orchestrator Guide with bridge-acp.sh usage examples
-- [ ] Test bridge-acp.sh relay mode end-to-end with external dispatch
+- [x] Update Orchestrator Guide with bridge-acp.sh usage examples (section 3.1 + 3.2, env var table, relay.sh examples)
+- [x] Smoke tests passed: task JSON generation with metadata, relay.sh with 4 result types (completed/failed/partial/data), tmux session detection, all scripts executable with valid shebangs
+- [ ] Full round-trip test with external dispatch (requires separate worker session -- cannot self-test)
 
 ## Phase 3: Structured Result Relay
 

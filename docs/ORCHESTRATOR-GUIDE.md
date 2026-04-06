@@ -38,7 +38,72 @@ Arguments:
 
 It generates a task ID, writes the JSON atomically to `inbox/`, sends the tmux trigger, polls `outbox/` with backoff, and prints the result JSON to stdout. Exit code 0 on success, 1 on timeout.
 
-This is the recommended starting point for most orchestrators. For more control (custom task JSON, retry logic, multi-step workflows), see the detailed dispatch flow below.
+This is the recommended starting point for simple orchestrators. For more control, see `bridge-acp.sh` and the detailed dispatch flow below.
+
+### 3.1 ACP-Aware Dispatch (bridge-acp.sh)
+
+For orchestrators that need session tracking, metadata, and formatted result relay, use `bridge-acp.sh`:
+
+```bash
+# Basic usage (same as bridge.sh)
+./scripts/bridge-acp.sh "Fix the login bug" "The form doesn't submit on click" ~/Projects/my-app 300
+
+# With metadata via environment variables
+BRIDGE_AGENT=patti \
+BRIDGE_SESSION_KEY="agent:main:whatsapp:direct:+1234567890" \
+BRIDGE_TASK_TYPE=code \
+BRIDGE_BACKGROUND="Users reported this after the last deploy" \
+BRIDGE_CONSTRAINTS='["Do not change the API response format", "Run tests after fixing"]' \
+BRIDGE_CONTEXT_FILES='["src/components/LoginForm.tsx"]' \
+  ./scripts/bridge-acp.sh "Fix login form" "The onClick handler seems stale" ~/Projects/my-app 300
+
+# Get human-readable output instead of raw JSON
+BRIDGE_OUTPUT_MODE=relay \
+  ./scripts/bridge-acp.sh "Analyze the codebase" "Find unused exports" ~/Projects/my-app 300
+```
+
+**Environment variables:**
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `BRIDGE_DIR` | `~/.the-bridge` | Bridge directory |
+| `BRIDGE_TMUX_SESSION` | `bridge` | tmux session name |
+| `BRIDGE_AGENT` | `openclaw` | Dispatching agent name |
+| `BRIDGE_SESSION_KEY` | (empty) | Session identifier for result relay routing |
+| `BRIDGE_TASK_TYPE` | `composite` | Task type: `code`, `research`, `analysis`, `file`, `command`, `composite` |
+| `BRIDGE_CONSTRAINTS` | (empty) | JSON array of constraint strings |
+| `BRIDGE_CONTEXT_FILES` | (empty) | JSON array of file paths for the worker to read first |
+| `BRIDGE_BACKGROUND` | (empty) | Background context string |
+| `BRIDGE_OUTPUT_MODE` | `json` | `json` (raw result) or `relay` (human-readable summary) |
+
+The `metadata` block in the task JSON carries session identity so the orchestrator can route the result back to the correct conversation. See [Protocol 3.3](PROTOCOL.md) for the metadata spec.
+
+### 3.2 Parsing Results with relay.sh
+
+`relay.sh` formats Bridge result JSON into a human-readable summary:
+
+```bash
+# From a file
+./scripts/relay.sh outbox/task-001.json
+
+# From stdin (e.g., piped from bridge-acp.sh)
+./scripts/bridge-acp.sh "Task" "Description" | ./scripts/relay.sh --stdin
+
+# Example output for a completed task:
+#   Fixed email regex to allow '+' in local part
+#   Files: src/utils/validate.ts
+#   Tests: npm test -- validate (3 passed, 0 failed)
+
+# Example output for a failed task:
+#   FAILED [DEPENDENCY_MISSING]: zod is not installed
+#   Suggestion: Install zod and resubmit the task
+#   (recoverable)
+```
+
+Task ID and duration are printed on stderr for logging:
+```
+[task-20260406-042 | 135s | completed]
+```
 
 ---
 
