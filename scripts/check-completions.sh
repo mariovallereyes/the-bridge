@@ -63,6 +63,24 @@ if [ "$MODE" = "--count" ]; then
       COUNT=$((COUNT + 1))
     fi
   done
+  # Also check signal file for completions not yet in outbox
+  if [ -f "$SIGNAL_FILE" ]; then
+    SIG_TASK=$(python3 -c "import json; print(json.load(open('$SIGNAL_FILE')).get('task_id','') or '')" 2>/dev/null || echo "")
+    if [ -n "$SIG_TASK" ] && ! is_consumed "$SIG_TASK"; then
+      # Only count if not already counted from outbox
+      ALREADY_COUNTED=false
+      for result_file in $(collect_outbox); do
+        OUTBOX_ID=$(python3 -c "import json; print(json.load(open('$result_file'))['id'])" 2>/dev/null || echo "")
+        if [ "$OUTBOX_ID" = "$SIG_TASK" ]; then
+          ALREADY_COUNTED=true
+          break
+        fi
+      done
+      if [ "$ALREADY_COUNTED" = "false" ]; then
+        COUNT=$((COUNT + 1))
+      fi
+    fi
+  fi
   echo "$COUNT"
   [ "$COUNT" -gt 0 ] && exit 0 || exit 1
 fi
