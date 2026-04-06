@@ -17,9 +17,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BRIDGE_DIR="${BRIDGE_DIR:-$HOME/.the-bridge}"
 
 # Quick count check (no model tokens, just filesystem)
-COUNT=$("$SCRIPT_DIR/check-completions.sh" --count 2>/dev/null || echo "0")
+COUNT=$("$SCRIPT_DIR/check-completions.sh" --count 2>/dev/null | tr -d '[:space:]')
+COUNT="${COUNT:-0}"
 
-if [ "$COUNT" -gt 0 ] && [ "$COUNT" != "0" ]; then
+if [ "$COUNT" -gt 0 ] 2>/dev/null; then
   # Consume and format the completions
   RELAY_OUTPUT=$("$SCRIPT_DIR/check-completions.sh" 2>/dev/null || echo "")
 
