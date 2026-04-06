@@ -156,6 +156,7 @@ RESEOF
   done
 ) &
 MOCK_PID=$!
+sleep 2  # Let mock worker start its poll loop
 
 # Write a task directly (bypass bridge-acp.sh since we can't use tmux)
 TASK_ID="e2e-roundtrip-001"
@@ -261,6 +262,7 @@ fi
 
 # --- Test 9: notify.sh signal file ---
 echo "Test 9: notify.sh writes signal file"
+mkdir -p "$TEST_DIR/logs"
 BRIDGE_DIR="$TEST_DIR" BRIDGE_NOTIFY_METHOD=file bash "$SCRIPT_DIR/notify.sh" "Test notification" --task-id "e2e-notify-001" 2>/dev/null
 if [ -f "$TEST_DIR/logs/completion-signal.json" ]; then
   SIGNAL_TASK=$(python3 -c "import json; print(json.load(open('$TEST_DIR/logs/completion-signal.json'))['task_id'])" 2>/dev/null)
@@ -271,6 +273,48 @@ if [ -f "$TEST_DIR/logs/completion-signal.json" ]; then
   fi
 else
   fail "notify.sh: signal file not created"
+fi
+
+# --- Test 10: check-completions.sh count mode ---
+echo "Test 10: check-completions.sh"
+# Write a fresh result for testing
+cat > "$TEST_DIR/outbox/e2e-check-001.json" << CHECKEOF
+{
+  "id": "e2e-check-001",
+  "version": "0.1.0",
+  "completed_at": "2026-04-06T16:00:00Z",
+  "duration_seconds": 10,
+  "status": "completed",
+  "result": {"summary": "Check completions test"},
+  "error": null
+}
+CHECKEOF
+# Clear consumed log so this is fresh
+rm -f "$TEST_DIR/logs/consumed.log"
+
+# Test count
+COUNT=$(BRIDGE_DIR="$TEST_DIR" bash "$SCRIPT_DIR/check-completions.sh" --count 2>/dev/null || echo "0")
+if [ "$COUNT" -gt 0 ]; then
+  pass "check-completions.sh --count finds pending completions"
+else
+  fail "check-completions.sh --count: expected >0, got $COUNT"
+fi
+
+# Test consume
+CONSUME_OUT=$(BRIDGE_DIR="$TEST_DIR" bash "$SCRIPT_DIR/check-completions.sh" 2>/dev/null)
+if echo "$CONSUME_OUT" | grep -q "Check completions test"; then
+  pass "check-completions.sh consumes and relays result"
+else
+  fail "check-completions.sh consume: $CONSUME_OUT"
+fi
+
+# Test dedup (second consume should find nothing)
+BRIDGE_DIR="$TEST_DIR" bash "$SCRIPT_DIR/check-completions.sh" --count >/dev/null 2>/dev/null
+DEDUP_EXIT=$?
+if [ $DEDUP_EXIT -eq 1 ]; then
+  pass "check-completions.sh dedup prevents re-processing (exit 1 = nothing pending)"
+else
+  fail "check-completions.sh dedup: expected exit 1, got $DEDUP_EXIT"
 fi
 
 # --- Summary ---
